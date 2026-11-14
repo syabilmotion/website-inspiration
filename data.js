@@ -36,4 +36,8 @@ window.VIDEOS = [
   { src: "https://x.com/motionimo/status/2120924687697866800",      tags: ["Motion", "Motion Design"] },
   { src: "https://x.com/sendrhq/status/2120879508592931163",        tags: ["Motion", "SaaS", "App Demo"] },
   { src: "https://x.com/semochkin_alex/status/2121422872354890183", tags: ["Motion"] },
+  { src: "https://x.com/yashxedits/status/2121270362000212225",     tags: ["Motion", "Motion Design"] },
+  { src: "https://x.com/gmgnai/status/2121373204229070991",         tags: ["Motion"] },
+  { src: "https://x.com/JohnnGfx/status/2121158228918583741",       tags: ["Motion", "Motion Design"] },
+  { src: "https://x.com/BuffetDesigns/status/2121210613754212567",  tags: ["Motion", "SaaS", "App Demo"] },
 ];
