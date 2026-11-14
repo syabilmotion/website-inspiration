@@ -20,4 +20,8 @@ window.VIDEOS = [
   { src: "https://x.com/Aster_DEX/status/2121241977928986936",     tags: ["Motion"] },
   { src: "https://x.com/saifcreative_/status/2121198303757086787", tags: ["Motion"] },
   { src: "https://x.com/blak3shao/status/2120939694984675409",     tags: ["Motion"] },
+  { src: "https://x.com/useforen/status/2121254397640417312",       tags: ["Motion"] },
+  { src: "https://x.com/motionimo/status/2120924687697866800",      tags: ["Motion"] },
+  { src: "https://x.com/sendrhq/status/2120879508592931163",        tags: ["Motion"] },
+  { src: "https://x.com/semochkin_alex/status/2121422872354890183", tags: ["Motion"] },
 ];
