@@ -4,7 +4,7 @@
     if (!btn) return;
     const on = Media.soundOn();
     btn.classList.toggle("off", !on);
-    btn.querySelector(".lbl").textContent = on ? "Bunyi on" : "Bunyi off";
+    btn.querySelector(".lbl").textContent = on ? "Sound on" : "Sound off";
     document.querySelectorAll("video[data-main]").forEach(v => (v.muted = !on));
   }
   if (btn) btn.addEventListener("click", () => { Media.setSound(!Media.soundOn()); syncSound(); });

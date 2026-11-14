@@ -2,8 +2,25 @@
 (function () {
   const M = window.Media;
   const canHover = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-  let unlocked = false;
-  const unlock = () => { unlocked = true; document.documentElement.classList.add("audio-ok"); };
+  let unlocked = false, current = null, hint = null;
+  const unlock = () => {
+    unlocked = true; document.documentElement.classList.add("audio-ok");
+    if (hint) { hint.classList.remove("show"); }
+    // Unmute the preview that is playing right now
+    if (current && current.el && current.el.tagName === "VIDEO" && M.soundOn()) {
+      current.el.muted = false; current.el.volume = 0; current.a.classList.remove("muted");
+      current.el.play().catch(() => {}); fade(current.el, 1);
+    }
+  };
+  function showHint() {
+    if (unlocked || !M.soundOn()) return;
+    if (!hint) {
+      hint = document.createElement("div"); hint.className = "hint";
+      hint.textContent = "Click anywhere to turn on sound";
+      document.body.appendChild(hint);
+    }
+    requestAnimationFrame(() => hint.classList.add("show"));
+  }
   ["pointerdown", "keydown"].forEach(e => window.addEventListener(e, unlock, { once: true, capture: true }));
 
   function fade(el, to, ms = 350) {
@@ -73,12 +90,14 @@
         el.addEventListener("timeupdate", () => {
           if (el && el.duration) bar.style.width = (el.currentTime / el.duration) * 100 + "%";
         });
+        el.addEventListener("error", () => { a.classList.add("noplay"); stop(); });
         el.addEventListener("playing", () => { a.classList.add("ready"); if (!el.muted) fade(el, 1); });
         box.appendChild(el);
+        current = { a, el };
         el.play().catch(() => {
           // Browser blok bunyi sebelum user klik -> main senyap
           if (!el) return;
-          el.muted = true; a.classList.add("muted");
+          el.muted = true; a.classList.add("muted"); showHint();
           el.play().catch(() => {});
         });
         if (el.muted) a.classList.add("muted");
@@ -99,6 +118,7 @@
       bar.style.width = "0";
       if (!el) return;
       const dead = el; el = null;
+      if (current && current.el === dead) current = null;
       if (dead.tagName === "VIDEO" && !dead.muted) {
         fade(dead, 0, 200);
         setTimeout(() => { dead.pause(); dead.removeAttribute("src"); dead.load(); dead.remove(); }, 220);

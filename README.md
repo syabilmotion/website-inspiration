@@ -23,4 +23,4 @@ Atau publish dengan GitHub Pages (Settings → Pages → branch ini, folder `/`)
 
 ## Nota bunyi
 Browser tak benarkan bunyi main sebelum pengunjung klik sekurang-kurangnya sekali,
-sebab tu ada skrin "Masuk dengan bunyi" di awal.
+jadi preview pertama main senyap dan ada notis "Click anywhere to turn on sound".

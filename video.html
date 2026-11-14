@@ -1,8 +1,10 @@
 <!doctype html>
-<html lang="ms">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- X's video CDN may reject requests that carry another site's referrer -->
+  <meta name="referrer" content="no-referrer">
   <title>Video — Motion Inspiration</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
@@ -12,8 +14,8 @@
   <header class="nav">
     <a href="index.html" class="logo">motion<span>/</span>inspo</a>
     <div class="nav-right">
-      <a href="index.html" class="back">← Semua video</a>
-      <button class="sound-toggle" id="soundToggle" aria-label="Bunyi on/off">
+      <a href="index.html" class="back">← All videos</a>
+      <button class="sound-toggle" id="soundToggle" aria-label="Toggle sound">
         <svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path class="w" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/><path class="x" d="M16 9l6 6M22 9l-6 6"/></svg>
         <span class="lbl"></span>
       </button>
@@ -32,8 +34,8 @@
           <div class="tags" id="tags"></div>
           <p class="desc" id="desc"></p>
           <div class="actions">
-            <a id="orig" class="btn" target="_blank" rel="noopener" hidden>Tengok sumber asal ↗</a>
-            <button id="copy" class="btn ghost">Salin link</button>
+            <a id="orig" class="btn" target="_blank" rel="noopener" hidden>View source ↗</a>
+            <button id="copy" class="btn ghost">Copy link</button>
           </div>
         </div>
       </div>
@@ -44,12 +46,12 @@
     </section>
 
     <section class="more">
-      <h2>Inspirasi <em>lain</em></h2>
+      <h2>More <em>inspiration</em></h2>
       <div class="grid" id="grid"></div>
     </section>
   </main>
 
-  <footer class="foot">© <span id="yr"></span> motion/inspo — semua video milik pemilik asal.</footer>
+  <footer class="foot">© <span id="yr"></span> motion/inspo — all videos belong to their original creators.</footer>
 
   <script src="data.js"></script>
   <script src="assets/media.js"></script>
@@ -76,9 +78,14 @@
       if (Media.poster(v)) el.poster = Media.poster(v);
       player.appendChild(el);
       el.play().catch(() => { el.muted = true; el.play().catch(() => {}); });
+      // If the video file fails to load (e.g. blocked by X), fall back to the tweet embed
+      el.addEventListener("error", () => { if (v.xid) { el.remove(); v.mp4 = null; embed(); } });
     } else {
-      // YouTube / Vimeo, atau tweet (fallback kalau video tak dapat diambil)
-      if (k === "x") player.classList.add("tweet");
+      embed();
+    }
+    function embed() {
+      // YouTube / Vimeo, or the tweet itself when its video file can't be loaded
+      if (v.xid) player.classList.add("tweet");
       const f = document.createElement("iframe");
       f.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
       f.allowFullscreen = true;
@@ -87,25 +94,25 @@
     }
 
     document.getElementById("title").textContent = v.title;
-    document.getElementById("creator").textContent = v.creator ? "oleh " + v.creator : "";
+    document.getElementById("creator").textContent = v.creator ? "by " + v.creator : "";
     document.getElementById("desc").textContent = v.desc || "";
     document.getElementById("tags").innerHTML = (v.tags || []).map(t => `<a href="index.html?cat=${encodeURIComponent(t)}">${t}</a>`).join("");
     const orig = document.getElementById("orig");
     const source = v.link || (k !== "file" ? v.src : "");
-    if (source) { orig.href = source; orig.hidden = false; orig.textContent = v.xid ? "Tengok di X ↗" : "Tengok sumber asal ↗"; }
+    if (source) { orig.href = source; orig.hidden = false; orig.textContent = v.xid ? "View on X ↗" : "View source ↗"; }
     hookPause();
     }
     document.getElementById("copy").onclick = e => {
       navigator.clipboard?.writeText(location.href);
-      e.target.textContent = "Disalin ✓"; setTimeout(() => (e.target.textContent = "Salin link"), 1500);
+      e.target.textContent = "Copied ✓"; setTimeout(() => (e.target.textContent = "Copy link"), 1500);
     };
 
     // Prev / next
     const prev = all[(idx - 1 + all.length) % all.length], next = all[(idx + 1) % all.length];
     const P = document.getElementById("prev"), N = document.getElementById("next");
     const pgLabel = () => {
-      P.href = "video.html?id=" + prev.id; P.innerHTML = `<small>← Sebelum</small>${prev.title}`;
-      N.href = "video.html?id=" + next.id; N.innerHTML = `<small>Seterusnya →</small>${next.title}`;
+      P.href = "video.html?id=" + prev.id; P.innerHTML = `<small>← Previous</small>${prev.title}`;
+      N.href = "video.html?id=" + next.id; N.innerHTML = `<small>Next →</small>${next.title}`;
     };
     pgLabel(); Media.resolve(prev).then(pgLabel); Media.resolve(next).then(pgLabel);
 
