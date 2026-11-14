@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Video — Motion Inspiration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="detail">
+  <header class="nav">
+    <a href="index.html" class="logo">motion<span>/</span>inspo</a>
+    <div class="nav-right">
+      <a href="index.html" class="back">← Semua video</a>
+      <button class="sound-toggle" id="soundToggle" aria-label="Bunyi on/off">
+        <svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path class="w" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/><path class="x" d="M16 9l6 6M22 9l-6 6"/></svg>
+        <span class="lbl"></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="player-wrap">
+      <div class="player" id="player"></div>
+      <div class="info">
+        <div>
+          <h1 id="title"></h1>
+          <p class="creator" id="creator"></p>
+        </div>
+        <div class="info-side">
+          <div class="tags" id="tags"></div>
+          <p class="desc" id="desc"></p>
+          <div class="actions">
+            <a id="orig" class="btn" target="_blank" rel="noopener" hidden>Tengok sumber asal ↗</a>
+            <button id="copy" class="btn ghost">Salin link</button>
+          </div>
+        </div>
+      </div>
+      <nav class="pager">
+        <a id="prev" class="pg"></a>
+        <a id="next" class="pg right"></a>
+      </nav>
+    </section>
+
+    <section class="more">
+      <h2>Inspirasi <em>lain</em></h2>
+      <div class="grid" id="grid"></div>
+    </section>
+  </main>
+
+  <footer class="foot">© <span id="yr"></span> motion/inspo — semua video milik pemilik asal.</footer>
+
+  <script src="data.js"></script>
+  <script src="assets/media.js"></script>
+  <script src="assets/grid.js"></script>
+  <script src="assets/ui.js"></script>
+  <script>
+    const all = window.VIDEOS;
+    const id = new URLSearchParams(location.search).get("id");
+    const v = Media.byId(id) || all[0];
+    const idx = all.indexOf(v);
+    const player = document.getElementById("player");
+    player.classList.add("loading");
+    Media.resolve(v).then(build);
+
+    function build() {
+    player.classList.remove("loading");
+    document.title = v.title + " — Motion Inspiration";
+    const sound = Media.soundOn();
+    const k = Media.kind(v);
+    if (k === "file") {
+      const el = document.createElement("video");
+      el.src = Media.fileSrc(v); el.controls = true; el.autoplay = true; el.playsInline = true; el.loop = true;
+      el.dataset.main = 1; el.muted = !sound;
+      if (Media.poster(v)) el.poster = Media.poster(v);
+      player.appendChild(el);
+      el.play().catch(() => { el.muted = true; el.play().catch(() => {}); });
+    } else {
+      // YouTube / Vimeo, atau tweet (fallback kalau video tak dapat diambil)
+      if (k === "x") player.classList.add("tweet");
+      const f = document.createElement("iframe");
+      f.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+      f.allowFullscreen = true;
+      f.src = Media.embedUrl(v, { muted: !sound });
+      player.appendChild(f);
+    }
+
+    document.getElementById("title").textContent = v.title;
+    document.getElementById("creator").textContent = v.creator ? "oleh " + v.creator : "";
+    document.getElementById("desc").textContent = v.desc || "";
+    document.getElementById("tags").innerHTML = (v.tags || []).map(t => `<span>${t}</span>`).join("");
+    const orig = document.getElementById("orig");
+    const source = v.link || (k !== "file" ? v.src : "");
+    if (source) { orig.href = source; orig.hidden = false; orig.textContent = v.xid ? "Tengok di X ↗" : "Tengok sumber asal ↗"; }
+    hookPause();
+    }
+    document.getElementById("copy").onclick = e => {
+      navigator.clipboard?.writeText(location.href);
+      e.target.textContent = "Disalin ✓"; setTimeout(() => (e.target.textContent = "Salin link"), 1500);
+    };
+
+    // Prev / next
+    const prev = all[(idx - 1 + all.length) % all.length], next = all[(idx + 1) % all.length];
+    const P = document.getElementById("prev"), N = document.getElementById("next");
+    const pgLabel = () => {
+      P.href = "video.html?id=" + prev.id; P.innerHTML = `<small>← Sebelum</small>${prev.title}`;
+      N.href = "video.html?id=" + next.id; N.innerHTML = `<small>Seterusnya →</small>${next.title}`;
+    };
+    pgLabel(); Media.resolve(prev).then(pgLabel); Media.resolve(next).then(pgLabel);
+
+    // Inspirasi lain: tag sama dulu, kemudian yang lain
+    const share = o => (o.tags || []).filter(t => (v.tags || []).includes(t)).length;
+    const others = all.filter(o => o !== v).sort((a, b) => share(b) - share(a));
+    Grid.render(document.getElementById("grid"), others);
+
+    // Hover video lain -> pause video utama supaya bunyi tak bertindih
+    function hookPause() {
+    const main = player.querySelector("video");
+    if (main) {
+      let wasPlaying = false;
+      document.getElementById("grid").addEventListener("mouseover", e => {
+        if (e.target.closest(".card") && !main.paused) { wasPlaying = true; main.pause(); }
+      });
+      document.getElementById("grid").addEventListener("mouseleave", () => {
+        if (wasPlaying) { main.play().catch(() => {}); wasPlaying = false; }
+      });
+    }
+    }
+  </script>
+</body>
+</html>

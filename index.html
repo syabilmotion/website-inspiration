@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Motion Inspiration</title>
+  <meta name="description" content="Koleksi video inspirasi motion design, editing & cinematic.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <div class="enter" id="enter">
+    <div class="enter-inner">
+      <p class="eyebrow">Motion Inspiration</p>
+      <h1>Hover. Dengar. <em>Terinspirasi.</em></h1>
+      <button id="enterBtn">Masuk dengan bunyi <span>→</span></button>
+      <button id="enterMute" class="ghost">Masuk tanpa bunyi</button>
+    </div>
+  </div>
+
+  <header class="nav">
+    <a href="index.html" class="logo">motion<span>/</span>inspo</a>
+    <div class="nav-right">
+      <span class="count" id="count"></span>
+      <button class="sound-toggle" id="soundToggle" aria-label="Bunyi on/off">
+        <svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path class="w" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/><path class="x" d="M16 9l6 6M22 9l-6 6"/></svg>
+        <span class="lbl"></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Rujukan <em>motion</em> &amp; edit<br>untuk projek seterusnya.</h1>
+      <p>Hover pada mana-mana video untuk preview dengan bunyi. Klik untuk tengok penuh.</p>
+    </section>
+
+    <section class="toolbar">
+      <div class="filters" id="filters"></div>
+      <input type="search" id="search" placeholder="Cari tajuk / creator…" autocomplete="off">
+    </section>
+
+    <section class="grid" id="grid"></section>
+    <p class="empty" id="empty" hidden>Tiada video dijumpai.</p>
+  </main>
+
+  <footer class="foot">© <span id="yr"></span> motion/inspo — semua video milik pemilik asal.</footer>
+
+  <script src="data.js"></script>
+  <script src="assets/media.js"></script>
+  <script src="assets/grid.js"></script>
+  <script src="assets/ui.js"></script>
+  <script>
+    const all = window.VIDEOS;
+    const grid = document.getElementById("grid");
+    const filters = document.getElementById("filters");
+    const search = document.getElementById("search");
+    const empty = document.getElementById("empty");
+    const tags = ["Semua", ...new Set(all.flatMap(v => v.tags || []))];
+    let active = "Semua";
+
+    filters.innerHTML = tags.map(t => `<button data-t="${t}" class="${t === active ? "on" : ""}">${t}</button>`).join("");
+    filters.addEventListener("click", e => {
+      const b = e.target.closest("button"); if (!b) return;
+      active = b.dataset.t;
+      filters.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+      draw();
+    });
+    search.addEventListener("input", draw);
+
+    function draw() {
+      const q = search.value.trim().toLowerCase();
+      const list = all.filter(v =>
+        (active === "Semua" || (v.tags || []).includes(active)) &&
+        (!q || (v.title + " " + (v.creator || "")).toLowerCase().includes(q)));
+      Grid.render(grid, list);
+      empty.hidden = list.length > 0;
+      document.getElementById("count").textContent = list.length + " video";
+    }
+    draw();
+
+    // Intro overlay (klik = browser benarkan bunyi)
+    const enter = document.getElementById("enter");
+    let seen = false; try { seen = sessionStorage.getItem("entered"); } catch (e) {}
+    if (seen) enter.remove();
+    const go = on => { Media.setSound(on); UI.syncSound(); enter.classList.add("out");
+      try { sessionStorage.setItem("entered", 1); } catch (e) {}
+      setTimeout(() => enter.remove(), 700); };
+    document.getElementById("enterBtn").onclick = () => go(true);
+    document.getElementById("enterMute").onclick = () => go(false);
+  </script>
+</body>
+</html>
