@@ -28,7 +28,7 @@
     cancelAnimationFrame(el._fade);
     const step = t => {
       const k = Math.min(1, (t - t0) / ms);
-      el.volume = from + (to - from) * k;
+      el.volume = Math.min(1, Math.max(0, from + (to - from) * k));
       if (k < 1) el._fade = requestAnimationFrame(step);
     };
     el._fade = requestAnimationFrame(step);
@@ -85,7 +85,7 @@
       const sound = withSound && M.soundOn();
       if (k === "file") {
         el = document.createElement("video");
-        el.src = M.fileSrc(v); el.loop = true; el.playsInline = true; el.preload = "auto";
+        el.src = M.previewSrc(v); el.loop = true; el.playsInline = true; el.preload = "auto";
         el.muted = !sound; el.volume = 0;
         el.addEventListener("timeupdate", () => {
           if (el && el.duration) bar.style.width = (el.currentTime / el.duration) * 100 + "%";

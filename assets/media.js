@@ -24,6 +24,18 @@
     return "file";
   }
   function fileSrc(v) { return v.mp4 || v.src; }
+  // Small file for hover previews so they start fast
+  function previewSrc(v) { return v.mp4small || fileSrc(v); }
+
+  // From a list of mp4 urls (X puts WxH in the path), pick the largest one whose
+  // shorter side is <= maxSide; fall back to the smallest available.
+  function pick(urls, maxSide) {
+    const sized = urls.map(u => { const m = u.match(/\/(\d+)x(\d+)\//); return { u, s: m ? Math.min(+m[1], +m[2]) : 0 }; })
+      .filter(x => x.s).sort((a, b) => a.s - b.s);
+    if (!sized.length) return null;
+    const ok = sized.filter(x => x.s <= maxSide);
+    return (ok.length ? ok[ok.length - 1] : sized[0]).u;
+  }
   function poster(v) {
     if (v.poster) return v.poster;
     const y = ytId(v.src);
@@ -47,13 +59,14 @@
   }
 
   // ---- Ambil video dari tweet (fxtwitter, fallback vxtwitter) ----
-  const CK = "xcache:";
+  const CK = "xcache2:";
   function clean(t) { return (t || "").replace(/https?:\/\/t\.co\/\S+/g, "").trim(); }
   async function fx(id) {
     const r = await fetch("https://api.fxtwitter.com/status/" + id);
     const j = await r.json(); const t = j.tweet; if (!t) throw 0;
     const vid = (t.media && (t.media.videos || []).find(m => m.url)) || null;
-    return { mp4: vid && vid.url, poster: vid && vid.thumbnail_url, name: t.author && t.author.name,
+    const mp4s = vid ? [vid.url, ...(vid.formats || []).filter(f => f.container === "mp4").map(f => f.url)] : [];
+    return { mp4: pick(mp4s, 1080) || (vid && vid.url), mp4small: pick(mp4s, 480), poster: vid && vid.thumbnail_url, name: t.author && t.author.name,
              handle: t.author && t.author.screen_name, text: clean(t.text) };
   }
   async function vx(id) {
@@ -79,6 +92,7 @@
       .then(d => {
         try { sessionStorage.setItem(CK + v.xid, JSON.stringify(d)); } catch (e) {}
         if (d.mp4) v.mp4 = d.mp4;
+        if (d.mp4small) v.mp4small = d.mp4small;
         if (!v.poster && d.poster) v.poster = d.poster;
         if (d.name && v.title.startsWith("@")) v.title = d.name;
         if (d.handle) v.creator = "@" + d.handle;
@@ -95,5 +109,5 @@
   function soundOn() { try { return localStorage.getItem(KEY) !== "off"; } catch (e) { return true; } }
   function setSound(on) { try { localStorage.setItem(KEY, on ? "on" : "off"); } catch (e) {} }
 
-  window.Media = { kind, fileSrc, poster, embedUrl, byId, resolve, soundOn, setSound };
+  window.Media = { kind, fileSrc, previewSrc, poster, embedUrl, byId, resolve, soundOn, setSound };
 })();
