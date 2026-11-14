@@ -178,3 +178,6 @@ main { padding: 0 var(--gut); }
 .player.tweet { aspect-ratio: auto; max-width: 560px; min-height: 400px; background: none; }
 .player.tweet iframe { position: static; width: 100%; height: 720px; }
 .desc { white-space: pre-line; }
+.filters button small { opacity: .5; font-size: 11px; margin-left: 2px; }
+.tags a { font-size: 12px; color: var(--mute); border: 1px solid var(--line); padding: 3px 10px; border-radius: 99px; transition: .2s; }
+.tags a:hover { color: var(--acc); border-color: var(--acc); }

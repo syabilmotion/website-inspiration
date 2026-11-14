@@ -63,6 +63,13 @@
     return { mp4: vid && vid.url, poster: vid && vid.thumbnail_url, name: j.user_name,
              handle: j.user_screen_name, text: clean(j.text) };
   }
+  function autoTag(v, text) {
+    const t = " " + (text || "").toLowerCase() + " ";
+    v.tags = v.tags || [];
+    Object.entries(window.AUTO_TAGS || {}).forEach(([cat, words]) => {
+      if (!v.tags.includes(cat) && words.some(w => t.includes(w))) v.tags.push(cat);
+    });
+  }
   const pending = {};
   function resolve(v) {
     if (!v.xid || v._resolved) return Promise.resolve(v);
@@ -76,6 +83,7 @@
         if (d.name && v.title.startsWith("@")) v.title = d.name;
         if (d.handle) v.creator = "@" + d.handle;
         if (!v.desc && d.text) v.desc = d.text;
+        autoTag(v, d.text);
         v._resolved = true; return v;
       })
       .catch(() => { v._resolved = true; return v; });

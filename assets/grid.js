@@ -46,6 +46,7 @@
   function fill(a, v) {
     a.querySelector("h3").textContent = v.title;
     a.querySelector(".meta p").textContent = v.creator || "";
+    a.querySelector(".meta .tags").innerHTML = (v.tags || []).map(t => `<span>${t}</span>`).join("");
     const p = M.poster(v), th = a.querySelector(".thumb");
     if (p && !th.querySelector("img")) {
       const img = new Image(); img.alt = ""; img.loading = "lazy"; img.src = p;

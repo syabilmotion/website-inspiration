@@ -57,16 +57,25 @@
     const filters = document.getElementById("filters");
     const search = document.getElementById("search");
     const empty = document.getElementById("empty");
-    const tags = ["Semua", ...new Set(all.flatMap(v => v.tags || []))];
-    let active = "Semua";
+    const cats = () => ["Semua", ...new Set([...(window.CATEGORIES || []), ...all.flatMap(v => v.tags || [])])];
+    let active = new URLSearchParams(location.search).get("cat") || "Semua";
 
-    filters.innerHTML = tags.map(t => `<button data-t="${t}" class="${t === active ? "on" : ""}">${t}</button>`).join("");
+    function drawFilters() {
+      filters.innerHTML = cats().map(t => {
+        const n = t === "Semua" ? all.length : all.filter(v => (v.tags || []).includes(t)).length;
+        return `<button data-t="${t}" class="${t === active ? "on" : ""}">${t} <small>${n}</small></button>`;
+      }).join("");
+    }
+    drawFilters();
     filters.addEventListener("click", e => {
       const b = e.target.closest("button"); if (!b) return;
       active = b.dataset.t;
       filters.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+      history.replaceState(null, "", active === "Semua" ? location.pathname : "?cat=" + encodeURIComponent(active));
       draw();
     });
+    // Lepas data tweet sampai, kategori auto mungkin bertambah -> kemas kini kiraan & grid
+    Promise.all(all.map(Media.resolve)).then(() => { drawFilters(); if (active !== "Semua") draw(); });
     search.addEventListener("input", draw);
 
     function draw() {

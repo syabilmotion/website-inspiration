@@ -89,7 +89,7 @@
     document.getElementById("title").textContent = v.title;
     document.getElementById("creator").textContent = v.creator ? "oleh " + v.creator : "";
     document.getElementById("desc").textContent = v.desc || "";
-    document.getElementById("tags").innerHTML = (v.tags || []).map(t => `<span>${t}</span>`).join("");
+    document.getElementById("tags").innerHTML = (v.tags || []).map(t => `<a href="index.html?cat=${encodeURIComponent(t)}">${t}</a>`).join("");
     const orig = document.getElementById("orig");
     const source = v.link || (k !== "file" ? v.src : "");
     if (source) { orig.href = source; orig.hidden = false; orig.textContent = v.xid ? "Tengok di X ↗" : "Tengok sumber asal ↗"; }
