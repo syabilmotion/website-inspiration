@@ -1,0 +1,4 @@
+# Site statik: tiada build, publish folder root
+[build]
+  publish = "."
+  command = ""
